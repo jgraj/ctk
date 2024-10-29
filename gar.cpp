@@ -190,8 +190,8 @@ struct gar {
 		if (count == 0) {
 			CTK_PANIC("%s: count is zero", __PRETTY_FUNCTION__);
 		}
-		if (index + count > this->len) {
-			CTK_PANIC("%s: index %zu+%zu is out of bounds (len:%zu)", __PRETTY_FUNCTION__, index, count, this->len);
+		if (index >= this->len) {
+			CTK_PANIC("%s: index %zu is out of bounds (len:%zu)", __PRETTY_FUNCTION__, index, this->len);
 		}
 		this->len += count;
 		while (this->len >= this->cap) {
