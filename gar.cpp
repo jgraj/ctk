@@ -142,6 +142,15 @@ struct gar {
 		this->len += 1;
 	}
 
+	void push_many(T* src_ptr, size_t count) {
+		size_t old_len = len;
+		this->len += count;
+		while (this->len >= this->cap) {
+			this->grow();
+		}
+		std::memcpy(&this->buf[old_len], src_ptr, sizeof(T) * count);
+	}
+
 	T pop() {
 		if (this->len == 0) {
 			CTK_PANIC("%s: len is zero", __PRETTY_FUNCTION__);
@@ -150,13 +159,11 @@ struct gar {
 		return this->buf[this->len];
 	}
 
-	void push_many(T* src_ptr, size_t count) {
-		size_t old_len = len;
-		this->len += count;
-		while (this->len >= this->cap) {
-			this->grow();
+	void pop_many(size_t count) {
+		if (this->len < count) {
+			CTK_PANIC("%s: len is zero", __PRETTY_FUNCTION__);
 		}
-		std::memcpy(&this->buf[old_len], src_ptr, sizeof(T) * count);
+		this->len -= count;
 	}
 
 	void join(ar<T> other) {
@@ -167,7 +174,34 @@ struct gar {
 		this->push_many(other.buf, other.len);
 	}
 
-	T remove_at(size_t index) {
+	void insert(size_t index, T value) {
+		if (index >= this->len) {
+			CTK_PANIC("%s: index %zu is out of bounds (len:%zu)", __PRETTY_FUNCTION__, index, this->len);
+		}
+		if (this->len == this->cap) {
+			this->grow();
+		}
+		std::memmove(&this->buf[index + 1], &this->buf[index], sizeof(T) * (this->len - index));
+		this->buf[index] = value;
+		this->len += 1;
+	}
+
+	void insert_many(size_t index, T* src_ptr, size_t count) {
+		if (count == 0) {
+			CTK_PANIC("%s: count is zero", __PRETTY_FUNCTION__);
+		}
+		if (index + count > this->len) {
+			CTK_PANIC("%s: index %zu+%zu is out of bounds (len:%zu)", __PRETTY_FUNCTION__, index, count, this->len);
+		}
+		this->len += count;
+		while (this->len >= this->cap) {
+			this->grow();
+		}
+		std::memmove(&this->buf[index + count], &this->buf[index], sizeof(T) * (this->len - index - count));
+		std::memcpy(&this->buf[index], src_ptr, sizeof(T) * count);
+	}
+
+	T remove(size_t index) {
 		if (index >= this->len) {
 			CTK_PANIC("%s: index %zu is out of bounds (len:%zu)", __PRETTY_FUNCTION__, index, this->len);
 		}
