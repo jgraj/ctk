@@ -3,10 +3,8 @@ struct gar;
 
 template <typename T>
 struct ar {
-	T* buf;
-	size_t len;
-
-	constexpr ar(): buf(nullptr), len(0) {}
+	T* buf = nullptr;
+	size_t len = 0;
 
 	void bound_check(size_t index) const {
 		if (index >= this->len) {
@@ -40,7 +38,7 @@ struct ar {
 	}
 
 	void free() {
-		::free(this->buf);
+		std::free(this->buf);
 		this->buf = nullptr;
 	}
 
@@ -67,11 +65,9 @@ struct ar {
 
 template <typename T>
 struct gar {
-	T* buf;
-	size_t len;
-	size_t cap;
-
-	constexpr gar(): buf(nullptr), len(0), cap(0) {}
+	T* buf = nullptr;
+	size_t len = 0;
+	size_t cap = 0;
 
 	void bound_check(size_t index) const {
 		if (index >= this->len) {
