@@ -1,3 +1,3 @@
-# Simple growable arrays for C++
+# C++ Toolkit v0.1
 
-Works with GCC and C++20
+for GCC, C++20
