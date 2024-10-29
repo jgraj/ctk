@@ -142,7 +142,7 @@ struct gar {
 		this->len += 1;
 	}
 
-	void push_many(T* src_ptr, size_t count) {
+	void push_many(const T* src_ptr, size_t count) {
 		size_t old_len = len;
 		this->len += count;
 		while (this->len >= this->cap) {
@@ -186,7 +186,7 @@ struct gar {
 		this->len += 1;
 	}
 
-	void insert_many(size_t index, T* src_ptr, size_t count) {
+	void insert_many(size_t index, const T* src_ptr, size_t count) {
 		if (count == 0) {
 			CTK_PANIC("%s: count is zero", __PRETTY_FUNCTION__);
 		}
