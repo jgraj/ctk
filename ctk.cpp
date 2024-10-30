@@ -57,13 +57,24 @@ inline T* alloc_many(size_t count) {
 	return (T*)std::malloc(sizeof(T) * count);
 }
 
-char* alloc_format(const char* format, ...) {
+template <typename T>
+inline T* alloc_many_copy(const void* value, size_t count) {
+	if (count == 0) {
+		CTK_PANIC("alloc_many failed");
+	}
+	T* ptr = (T*)std::malloc(sizeof(T) * count);
+	std::memcpy(ptr, value, sizeof(T) * count);
+	return ptr;
+}
+
+ar<char> alloc_format(const char* format, ...) {
 	va_list args;
 	va_start(args, format);
 	char* string;
-	if (vasprintf(&string, format, args) == -1) {
+	int len = vasprintf(&string, format, args);
+	if (len == -1) {
 		CTK_PANIC("vasprintf failed");
 	}
 	va_end(args);
-	return string;
+	return ar<char>(string, len);
 }
