@@ -1,3 +1,3 @@
-# C++ Toolkit v0.7
+# C++ Toolkit v0.8
 
 for GCC, C++20
