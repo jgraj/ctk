@@ -24,7 +24,7 @@ inline i32 i32_ceil(f32 value) {
 }
 
 inline i32 i32_rand() {
-	return ((i32)rand() << 16) | (i32)rand() - 2147483648;
+	return ((i32)rand() << 16) | ((i32)rand() - 2147483648);
 }
 
 inline i32 i32_rand_range(i32 min, i32 max) {

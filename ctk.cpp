@@ -2,28 +2,33 @@
 #define CTK_PANIC(...) std::printf(__VA_ARGS__); std::exit(1);
 #endif
 
-typedef uint8_t  u8;
-typedef int8_t   i8;
+typedef float f32;
+typedef double f64;
+typedef uint8_t u8;
+typedef int8_t i8;
 typedef uint16_t u16;
-typedef int16_t  i16;
+typedef int16_t i16;
 typedef uint32_t u32;
-typedef int32_t  i32;
-typedef int64_t  i64;
+typedef int32_t i32;
 typedef uint64_t u64;
-typedef float    f32;
-typedef double   f64;
+typedef int64_t i64;
+
+#include "gar.cpp"
+#include "f32.cpp"
+#include "f64.cpp"
+#include "u8.cpp"
+#include "i8.cpp"
+#include "u16.cpp"
+#include "i16.cpp"
+#include "u32.cpp"
+#include "i32.cpp"
+#include "u64.cpp"
+#include "i64.cpp"
 
 constexpr f64 pi = 3.14159265358979323846;
 constexpr f64 deg2rad = pi / 180.0;
 constexpr f64 rad2deg = 180.0 / pi;
 
-#include "gar.cpp"
-#include "u32.cpp"
-#include "i32.cpp"
-#include "u64.cpp"
-#include "i64.cpp"
-#include "f32.cpp"
-#include "f64.cpp"
 #include "v2.cpp"
 #include "v3.cpp"
 #include "v4.cpp"
