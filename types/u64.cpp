@@ -1,7 +1,7 @@
 u64 u64_parse(ar<char> str) {
 	u64 value = 0;
-	for (size_t i = 0; i < str.len; ++i) {
-		char c = str[i];
+	for (size_t a = 0; a < str.len; ++a) {
+		char c = str[a];
 		if (c < '0' || c > '9') {
 			CTK_PANIC("u64_parse failed");
 		}

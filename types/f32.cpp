@@ -23,6 +23,11 @@ inline f32 f32_lerp(f32 a, f32 b, f32 f) {
 	return a * (1.0f - f) + (b * f);
 }
 
+inline f32 f32_smoothstep(f32 a, f32 b, f32 f) {
+	f = f32_clamp(f, 0.0f, 1.0f);
+	return f32_lerp(a, b, f * f * (3.0f - 2.0f * f));
+}
+
 inline f32 f32_rand_01() {
 	return (f32)(rand()) / (f32)(RAND_MAX);
 }

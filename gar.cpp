@@ -1,4 +1,29 @@
-#include "gar.hpp"
+template <typename T> struct gar {
+	T* buf = nullptr;
+	size_t len = 0;
+	size_t cap = 0;
+
+	void bound_check(size_t index) const;
+	const T& operator [] (size_t index) const;
+	T& operator [] (size_t index);
+	static gar<T> create(size_t cap);
+	static gar<T> create_auto();
+	void destroy();
+	void clear();
+	ar<T> to_ar() const;
+	gar<T> clone() const;
+	void grow();
+	void push(T value);
+	void push_many(const void* src_ptr, size_t count);
+	T pop();
+	void pop_many(size_t count);
+	void join(ar<T> other);
+	void join(gar<T> other);
+	void insert(size_t index, T value);
+	void insert_many(size_t index, const void* src_ptr, size_t count);
+	T remove(size_t index);
+	void remove_many(size_t index, size_t count);
+};
 
 template <typename T> void gar<T>::bound_check(size_t index) const {
 	if (index >= this->len) {
@@ -20,7 +45,7 @@ template <typename T> T& gar<T>::operator [] (size_t index) {
 	return this->buf[index];
 }
 
-template <typename T> gar<T> gar<T>::alloc(size_t cap) {
+template <typename T> gar<T> gar<T>::create(size_t cap) {
 	if (cap == 0) {
 		CTK_PANIC("%s: cap is zero", __PRETTY_FUNCTION__);
 	}
@@ -34,7 +59,11 @@ template <typename T> gar<T> gar<T>::alloc(size_t cap) {
 	return array;
 }
 
-template <typename T> void gar<T>::free() {
+template <typename T> gar<T> gar<T>::create_auto() {
+	return gar<T>::create(2);
+}
+
+template <typename T> void gar<T>::destroy() {
 	std::free(this->buf);
 	this->buf = nullptr;
 }
@@ -51,7 +80,7 @@ template <typename T> ar<T> gar<T>::to_ar() const {
 }
 
 template <typename T> gar<T> gar<T>::clone() const {
-	gar<T> new_array = alloc(this->cap);
+	gar<T> new_array = gar<T>::create(this->cap);
 	new_array.len = this->len;
 	std::memcpy(new_array.buf, this->buf, sizeof(T) * this->len);
 	return new_array;
@@ -106,7 +135,7 @@ template <typename T> void gar<T>::join(gar<T> other) {
 }
 
 template <typename T> void gar<T>::insert(size_t index, T value) {
-	if (index >= this->len) {
+	if (index > this->len) {
 		CTK_PANIC("%s: index %zu is out of bounds (len:%zu)", __PRETTY_FUNCTION__, index, this->len);
 	}
 	if (this->len == this->cap) {
