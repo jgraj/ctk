@@ -4,19 +4,21 @@ struct Thread {
 		void* arg;
 	};
 
-#ifdef CTK_WIN
+#ifdef CTK_WIN32
 	HANDLE handle;
 #endif
-#ifdef CTK_LIN
+#ifdef CTK_LINUX
 	pthread_t id;
 #endif
+	bool exists = false;
 
-	static Thread create(void (*func)(void*), void* arg);
+	void create(void (*func)(void*), void* arg);
 	void join();
+	bool try_join();
 	void detach();
 };
 
-#ifdef CTK_WIN
+#ifdef CTK_WIN32
 DWORD WINAPI bootstrap(LPVOID param) {
 	Thread::Arg* thread_arg = (Thread::Arg*)param;
 	thread_arg->func(thread_arg->arg);
@@ -24,21 +26,39 @@ DWORD WINAPI bootstrap(LPVOID param) {
 	return 0;
 }
 
-Thread Thread::create(void (*func)(void*), void* arg) {
+void Thread::create(void (*func)(void*), void* arg) {
 	Thread::Arg* thread_arg = alloc<Thread::Arg>(Thread::Arg(func, arg));
 	Thread thread;
-	thread.handle = ::CreateThread(nullptr, 0, bootstrap, thread_arg, 0, nullptr);
-	if (thread.handle == nullptr) {
+	this->handle = ::CreateThread(nullptr, 0, bootstrap, thread_arg, 0, nullptr);
+	if (this->handle == nullptr) {
 		CTK_PANIC("CreateThread failed");
 	}
-	return thread;
 }
 
 void Thread::join() {
+	if (this->exists == false) {
+		return;
+	}
 	if (::WaitForSingleObject(this->handle, INFINITE) != WAIT_OBJECT_0) {
 		CTK_PANIC("WaitForSingleObject failed");
 	}
 	::CloseHandle(this->handle);
+	this->exists = false;
+}
+
+bool Thread::try_join() {
+	if (this->exists == false) {
+		return true;
+	}
+	DWORD wait_value = ::WaitForSingleObject(this->handle, 0);
+	if (wait_value == WAIT_FAILED) {
+		CTK_PANIC("WaitForSingleObject failed");
+	}
+	if (wait_value == WAIT_OBJECT_0) {
+		this->exists = false;
+		return true;
+	}
+	return false;
 }
 
 void Thread::detach() {
@@ -46,7 +66,7 @@ void Thread::detach() {
 }
 #endif
 
-#ifdef CTK_LIN
+#ifdef CTK_LINUX
 void* bootstrap(void* param) {
 	Thread::Arg* thread_arg = (Thread::Arg*)param;
 	thread_arg->func(thread_arg->arg);
@@ -54,17 +74,34 @@ void* bootstrap(void* param) {
 	return nullptr;
 }
 
-Thread Thread::create(void (*func)(void*), void* arg) {
+void Thread::create(void (*func)(void*), void* arg) {
 	Thread::Arg* thread_arg = alloc<Thread::Arg>(Thread::Arg(func, arg));
-	Thread thread;
-	if (::pthread_create(&thread.id, nullptr, bootstrap, thread_arg) != 0) {
-		CTK_PANIC("pthread_create failed");
+	int pthread_create_ret = ::pthread_create(&this->id, nullptr, bootstrap, thread_arg);
+	if (pthread_create_ret == 0) {
+		this->exists = true;
+	} else {
+		this->exists = false;
 	}
-	return thread;
 }
 
 void Thread::join() {
+	if (this->exists == false) {
+		return;
+	}
 	::pthread_join(this->id, nullptr);
+	this->exists = false;
+}
+
+bool Thread::try_join() {
+	if (this->exists == false) {
+		return true;
+	}
+	int join_value = ::pthread_tryjoin_np(this->id, nullptr);
+	if (join_value == 0) {
+		this->exists = false;
+		return true;
+	}
+	return false;
 }
 
 void Thread::detach() {

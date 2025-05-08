@@ -18,15 +18,19 @@ inline f32 f32_abs(f32 a) {
 	return a < 0.0f ? -a : a;
 }
 
-inline f32 f32_lerp(f32 a, f32 b, f32 f) {
-	f = f32_clamp(f, 0.0f, 1.0f);
-	return a * (1.0f - f) + (b * f);
+inline bool f32_cmp(f32 a, f32 b, f32 epsilon) {
+	return std::fabs(a - b) < epsilon;
 }
 
-inline f32 f32_smoothstep(f32 a, f32 b, f32 f) {
-	f = f32_clamp(f, 0.0f, 1.0f);
-	return f32_lerp(a, b, f * f * (3.0f - 2.0f * f));
+inline f32 f32_lerp(f32 a, f32 b, f64 t, f64 dt) {
+	f64 ht = -t / std::log2(0.001);
+	return b + (a - b) * std::exp2(-dt / ht);
 }
+
+// inline f32 f32_smoothstep(f32 a, f32 b, f64 f) {
+// 	f = f64_clamp(f, 0.0, 1.0);
+// 	return f32_lerp(a, b, f * f * (3.0 - 2.0 * f));
+// }
 
 inline f32 f32_rand_01() {
 	return (f32)(rand()) / (f32)(RAND_MAX);

@@ -1,8 +1,8 @@
 struct Mutex {
-#ifdef CTK_WIN
+#ifdef CTK_WIN32
 	CRITICAL_SECTION critical_section;
 #endif
-#ifdef CTK_LIN
+#ifdef CTK_LINUX
 	pthread_mutex_t pthread_mutex;
 #endif
 
@@ -12,7 +12,7 @@ struct Mutex {
 	void unlock();
 };
 
-#ifdef CTK_WIN
+#ifdef CTK_WIN32
 Mutex Mutex::create() {
 	Mutex mutex;
 	::InitializeCriticalSection(&mutex.critical_section);
@@ -32,7 +32,7 @@ void Mutex::unlock() {
 }
 #endif
 
-#ifdef CTK_LIN
+#ifdef CTK_LINUX
 Mutex Mutex::create() {
 	Mutex mutex;
 	pthread_mutex_init(&mutex.pthread_mutex, nullptr);

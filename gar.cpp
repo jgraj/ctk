@@ -32,14 +32,14 @@ template <typename T> void gar<T>::bound_check(size_t index) const {
 }
 
 template <typename T> const T& gar<T>::operator [] (size_t index) const {
-#ifdef GAR_ABC
+#ifdef CTK_ABC
 	bound_check(index);
 #endif
 	return this->buf[index];
 }
 
 template <typename T> T& gar<T>::operator [] (size_t index) {
-#ifdef GAR_ABC
+#ifdef CTK_ABC
 	bound_check(index);
 #endif
 	return this->buf[index];

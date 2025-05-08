@@ -10,10 +10,21 @@ struct v2f {
 	constexpr v2f() = default;
 	constexpr v2f(f32 _x, f32 _y): x(_x), y(_y) {}
 
+	bool operator==(v2f const& other) const {
+		return this->x == other.x && this->y == other.y;
+	}
+	
+	bool operator!=(v2f const& other) const {
+		return this->x != other.x || this->y != other.y;
+	}
+
 	constexpr v2i to_v2i() const;
-	v2f rounded() const;
+	v2f round() const;
+	v2f ceil() const;
 
 	static constexpr v2f xy(f32 value);
+	static f32 sqr_dst(v2f a, v2f b);
+	static f32 dst(v2f a, v2f b);
 	static v2f add(v2f a, v2f b);
 	static v2f sub(v2f a, v2f b);
 	static v2f mul(v2f a, v2f b);
@@ -53,8 +64,22 @@ constexpr v2i v2f::to_v2i() const {
 	return v2i((i32)this->x, (i32)this->y);
 }
 
-v2f v2f::rounded() const {
-	return v2f((i32)this->x, (i32)this->y);
+v2f v2f::round() const {
+	return v2f(std::roundf(this->x), std::roundf(this->y));
+}
+
+v2f v2f::ceil() const {
+	return v2f(std::ceilf(this->x), std::ceilf(this->y));
+}
+
+f32 v2f::sqr_dst(v2f a, v2f b) {
+	f32 x = a.x - b.x;
+	f32 y = a.y - b.y;
+	return x * x + y * y;
+}
+
+f32 v2f::dst(v2f a, v2f b) {
+	return std::sqrt(sqr_dst(a, b));
 }
 
 v2f v2f::add(v2f a, v2f b) {

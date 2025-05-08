@@ -5,16 +5,20 @@
 #include <cstddef>
 #include <cstdio>
 #include <cmath>
+#include <cctype>
 #include <cstring>
+#include <cinttypes>
 
 #ifdef _WIN32
-#define CTK_WIN
+#define CTK_WIN32
 #define WINVER _WIN32_WINNT_WIN10
 #include <windows.h>
+#include <dbghelp.h>
+#include "exception.cpp"
 #endif
 
 #ifdef __linux__
-#define CTK_LIN
+#define CTK_LINUX
 #include <pthread.h>
 #endif
 
@@ -22,7 +26,7 @@
 #define CTK_PANIC(...) std::printf(__VA_ARGS__); std::exit(1);
 #endif
 
-#define AR_STR(str) (ar<u8>(((u8*)str), sizeof(str) - 1))
+#define AR_STR(str) (ar<u8>(((u8*)str), sizeof(str)))
 
 typedef float f32;
 typedef double f64;
@@ -61,9 +65,11 @@ ar<u8> load_file(const char* path);
 #include "thread.cpp"
 #include "ar.cpp"
 #include "gar.cpp"
+#include "file_writer.cpp"
+#include "file_reader.cpp"
 #include "types/size.cpp"
-#include "types/f32.cpp"
 #include "types/f64.cpp"
+#include "types/f32.cpp"
 #include "types/u8.cpp"
 #include "types/i8.cpp"
 #include "types/u16.cpp"
@@ -129,9 +135,52 @@ ar<u8> load_file(const char* path) {
 	std::rewind(file);
 	ar<u8> data = ar<u8>::create(file_size);
 	size_t bytes_read = std::fread(data.buf, 1, file_size, file);
-	if (bytes_read != file_size) {
+	if (bytes_read != (size_t)file_size) {
 		CTK_PANIC("std::fread failed");
 	}
 	std::fclose(file);
 	return data;
+}
+
+bool str_to_u64(ar<u8> str, u64* out) {
+	u64 value = 0;
+	size_t a = 0;
+	while (a < str.len && isspace(str[a])) {
+		a += 1;
+	}
+	if (a >= str.len) {
+		return false;
+	}
+	for (; a < str.len; ++a) {
+		if (!isdigit(str[a])) {
+			return false;
+		}
+		u8 digit = str[a] - '0';
+		if (value > (UINT64_MAX / 10) || (value == (UINT64_MAX / 10) && digit > (UINT64_MAX % 10))) {
+			return false;
+		}
+		value = value * 10 + digit;
+	}
+	*out = value;
+	return true;
+}
+
+ar<u8> u64_to_str(u64 value) {
+	if (value == 0) {
+		ar<u8> str = ar<u8>::create(1);
+		str[0] = '0';
+		return str;
+	}
+	size_t str_len = 0;
+	for (u64 a = value; a != 0; a /= 10) {
+		str_len += 1;
+	}
+	ar<u8> str = ar<u8>::create(str_len);
+	size_t pos = str_len;
+	while (value != 0) {
+		pos -= 1;
+		str[pos] = '0' + (value % 10);
+		value /= 10;
+	}
+	return str;
 }
